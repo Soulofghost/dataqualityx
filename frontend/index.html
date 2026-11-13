@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataQualityX | Automated Data Profiler & Schema Drift Sentinel</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-layout">
+    <header class="navbar">
+      <div class="nav-brand">
+        <div class="brand-spark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div>
+          <h2>DataQualityX</h2>
+          <span class="tagline">DATA OBSERVABILITY & SCHEMA DRIFT SENTINEL</span>
+        </div>
+      </div>
+
+      <div class="nav-metrics">
+        <div class="metric-chip">
+          <span class="label">DATASETS</span>
+          <span class="value" id="statDatasets">0</span>
+        </div>
+        <div class="metric-chip">
+          <span class="label">HEALTH SCORE</span>
+          <span class="value text-emerald" id="statHealthScore">100%</span>
+        </div>
+        <div class="metric-chip">
+          <span class="label">OUTLIER COLUMNS</span>
+          <span class="value text-amber" id="statOutliers">0</span>
+        </div>
+        <div class="metric-chip">
+          <span class="label">FAILED ASSERTIONS</span>
+          <span class="value text-red" id="statFails">0</span>
+        </div>
+        <button class="btn btn-primary" id="openUploadModal">+ Ingest & Profile</button>
+      </div>
+    </header>
+
+    <main class="main-container">
+      <div class="hero-section">
+        <div>
+          <h1>Autonomous Data Profiling & Quality Assertions</h1>
+          <p class="subtitle">Real-time column cardinality, null rate tracking, IQR outlier identification, Great Expectations assertions, and schema drift detection.</p>
+        </div>
+      </div>
+
+      <!-- Dataset Selector Bar -->
+      <div class="dataset-bar">
+        <label>Selected Dataset:</label>
+        <select id="datasetSelect">
+          <option value="">Loading datasets...</option>
+        </select>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <button class="tab-btn active" data-tab="profiles">Column Profiles & Telemetry</button>
+        <button class="tab-btn" data-tab="assertions">Data Quality Assertions</button>
+        <button class="tab-btn" data-tab="drift">Schema Drift Sentinel</button>
+      </div>
+
+      <!-- TAB 1: Profiles -->
+      <section class="tab-pane active" id="paneProfiles">
+        <div class="card">
+          <div class="card-header">
+            <h3>Column Statistics & Completeness Matrix</h3>
+            <span class="badge badge-info" id="colCountBadge">0 Columns</span>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Column Name</th>
+                    <th>Inferred Type</th>
+                    <th>Completeness</th>
+                    <th>Nulls</th>
+                    <th>Distinct Count</th>
+                    <th>Min Value</th>
+                    <th>Max Value</th>
+                    <th>Mean / IQR Outliers</th>
+                  </tr>
+                </thead>
+                <tbody id="profilesTableBody">
+                  <tr><td colspan="8" class="text-center text-muted">Select or ingest a dataset to view column profiles.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: Assertions -->
+      <section class="tab-pane" id="paneAssertions">
+        <div class="card">
+          <div class="card-header">
+            <h3>Expectations & Assertion Verification</h3>
+            <span class="badge badge-pass" id="healthBadge">HEALTH: 100%</span>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Assertion Rule</th>
+                    <th>Target Column</th>
+                    <th>Parameters</th>
+                    <th>Result Diagnostics</th>
+                  </tr>
+                </thead>
+                <tbody id="assertionsTableBody">
+                  <tr><td colspan="5" class="text-center text-muted">No assertions evaluated.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: Schema Drift -->
+      <section class="tab-pane" id="paneDrift">
+        <div class="drift-grid">
+          <div class="card">
+            <div class="card-header">
+              <h3>Simulate Ingest Schema Drift</h3>
+              <span class="badge badge-info">Production Sentinel</span>
+            </div>
+            <div class="card-body">
+              <div class="field">
+                <label>Current Incoming Schema (JSON)</label>
+                <textarea id="schemaJsonInput" rows="7">{
+  "user_id": "INTEGER",
+  "email": "STRING",
+  "age": "INTEGER",
+  "country": "STRING",
+  "amount": "FLOAT",
+  "status": "STRING",
+  "unapproved_column": "BOOLEAN"
+}</textarea>
+              </div>
+              <button class="btn btn-primary" id="checkDriftBtn">⚡ Evaluate Schema Drift</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Drift Evaluation Report</h3>
+              <span class="badge" id="driftBadge">CLEAN</span>
+            </div>
+            <div class="card-body">
+              <div class="drift-results" id="driftResults">
+                <p class="text-muted">Click "Evaluate Schema Drift" to verify compatibility against golden baseline.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: Ingest Dataset -->
+  <div class="modal-overlay" id="uploadModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Ingest & Profile Tabular Dataset</h3>
+        <button class="btn-close" id="closeUploadBtn">&times;</button>
+      </div>
+      <form id="uploadForm">
+        <div class="field">
+          <label>Dataset Identifier *</label>
+          <input type="text" id="dsName" required placeholder="e.g. Ingestion Pipeline Batch #401" value="Ingestion Pipeline Batch #401">
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <input type="text" id="dsDesc" placeholder="e.g. Daily user registration and billing records">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelUploadBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Profile Dataset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
